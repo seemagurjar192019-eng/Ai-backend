@@ -6,16 +6,15 @@ import google.generativeai as genai
 app = Flask(__name__)
 CORS(app)
 
-# Gemini Setup - Aakhri aur Sahi Tarika
-api_key = os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
+# API KEY Setup
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# Model ka naam ekdum sahi format mein (gemini-1.5-flash)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# YAHAN CHANGE HAI: Hum specifically v1.5 flash model ko direct access kar rahe hain
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 @app.route('/')
 def index():
-    return "Hugli AI Backend is Live!"
+    return "Backend is Active"
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -23,23 +22,12 @@ def chat():
         data = request.json
         user_message = data.get("message")
         
-        if not user_message:
-            return jsonify({"reply": "Kuch likho bhai!"}), 400
-
-        # AI Response
+        # Generative AI call
         response = model.generate_content(user_message)
         
-        # Check agar response mein text hai
-        if response.text:
-            return jsonify({"reply": response.text})
-        else:
-            return jsonify({"reply": "AI ne koi jawab nahi diya, fir se try karo."})
-
+        return jsonify({"reply": response.text})
     except Exception as e:
-        print(f"Error: {str(e)}")
-        # Error message ko short rakha hai taaki screen par ganda na dikhe
-        return jsonify({"reply": "Server Error: " + str(e)}), 500
+        return jsonify({"reply": f"Model Error: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=10000)
